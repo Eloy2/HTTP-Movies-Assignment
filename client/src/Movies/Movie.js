@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, Link, Redirect } from "react-router-dom";
 import MovieCard from "./MovieCard";
 
-function Movie({ addToSavedList }) {
+function Movie({ addToSavedList, setUpdate }) {
   const [movie, setMovie] = useState(null);
   const params = useParams();
+
+  const [ sendTo, setSendTo ] = useState(null);
 
   const fetchMovie = (id) => {
     axios
@@ -26,15 +28,37 @@ function Movie({ addToSavedList }) {
     return <div>Loading movie information...</div>;
   }
 
-  return (
-    <div className="save-wrapper">
-      <MovieCard movie={movie} />
+  const deleteMovie = () => {
+    axios.delete(`http://localhost:5000/api/movies/${params.id}`)
+      .then(res => console.log("res from movie comp", res))
+      .catch(err => console.log("Error from movie comp", err))
 
-      <div className="save-button" onClick={saveMovie}>
-        Save
+    setTimeout(() => {
+      setUpdate(Date.now);
+    }, 50)
+
+    setSendTo("/");
+  }
+
+  if (sendTo){
+    return <Redirect to={sendTo}/>
+  }
+  else {
+    return (
+      <div className="save-wrapper">
+        <MovieCard movie={movie} />
+
+        <div className="save-button" onClick={saveMovie}>
+          Save
+        </div>
+
+        <Link to={`/update-movie/${params.id}`}>
+          Edit Movie Info
+        </Link>
+        <button onClick={deleteMovie} >Delete Movie</button>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Movie;
